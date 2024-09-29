@@ -10,10 +10,19 @@ export async function askModel({ model, messages, format }) {
 
     return response.message.content.trim();
   } catch (error) {
-    if (error.message.includes('model') && error.message.includes('not found')) {
+    if (
+      error.message.includes('model') &&
+      error.message.includes('not found')
+    ) {
       console.error(
         `The model "${model}" is not installed in Ollama. Please install this model before using it.`
       );
+      return null;
+    } else if (
+      error.cause &&
+      error.cause.code === 'ECONNREFUSED'
+    ) {
+      console.error('Ollama is not initialized.');
       return null;
     } else {
       console.error('Error processing the request:', error);
@@ -32,10 +41,19 @@ export async function askModelStream({ model, messages }) {
 
     return responseGenerator;
   } catch (error) {
-    if (error.message.includes('model') && error.message.includes('not found')) {
+    if (
+      error.message.includes('model') &&
+      error.message.includes('not found')
+    ) {
       console.error(
         `The model "${model}" is not installed in Ollama. Please install this model before using it.`
       );
+      return null;
+    } else if (
+      error.cause &&
+      error.cause.code === 'ECONNREFUSED'
+    ) {
+      console.error('Ollama is not initialized.');
       return null;
     } else {
       console.error('Error processing the request:', error);
