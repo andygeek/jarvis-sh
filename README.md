@@ -1,5 +1,9 @@
 # Jarvis-sh
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/andygeek/jarvis-sh/refs/heads/master/assets/logo.png" alt="Descripción de la imagen" width="200px" />
+</div>
+
 An AI-powered command-line assistant for your terminal.
 
 ## Description
