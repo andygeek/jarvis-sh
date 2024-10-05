@@ -2,10 +2,14 @@
 import { handleCommandOrQuestion } from './src/commands.js';
 import { openEditor, setModel } from './src/utils.js';
 
+// Capture command-line arguments.
 const args = process.argv.slice(2);
 
-if (args.includes('--commands') || args.includes('-e')) {
+// Capture command-line arguments.
+if (args.includes('--commands')) {
   openEditor();
+
+// Check for the `--model` flag to set a specific model.
 } else if (args.includes('--model')) {
   const modelIndex = args.indexOf('--model');
   const model = args[modelIndex + 1];
@@ -14,6 +18,8 @@ if (args.includes('--commands') || args.includes('-e')) {
     process.exit(1);
   }
   setModel(model);
+
+// Default behavior: handle the input as a command or question.
 } else {
   const userInput = args.join(' ');
 
