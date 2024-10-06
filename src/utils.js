@@ -1,4 +1,4 @@
-import { exec, spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -140,25 +140,29 @@ export async function showCommandOptions(commandsList) {
 /**
  * Function to execute a shell command and display its output.
  * 
- * @param {string} command - The shell command to be executed.
- * @returns {Promise<string>} - Resolves with the command's output, or rejects if an error occurs.
+ * @param {string} command - The shell command to be executed, including its arguments.
+ * @returns {Promise<void>} - Resolves when the command finishes execution.
  * 
- * This function uses `exec` to run the specified command asynchronously. 
+ * This function uses `spawn` to run the specified command asynchronously without blocking.
  */
 export function executeCommand(command) {
   return new Promise((resolve, reject) => {
+    const [cmd, ...args] = command.split(' ');
     console.log(`Executing command: ${command}`);
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing command: ${error.message}`);
-        reject(error);
-        return;
+    
+    const child = spawn(cmd, args, { stdio: 'inherit' });
+
+    child.on('error', (error) => {
+      console.error(`Error executing command: ${error.message}`);
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Command failed with exit code ${code}`));
+      } else {
+        resolve();
       }
-      if (stderr) {
-        console.error(`Error: ${stderr}`);
-      }
-      console.log(`Output: ${stdout}`);
-      resolve(stdout);
     });
   });
 }
