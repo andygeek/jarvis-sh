@@ -1,8 +1,7 @@
 import { execSync, exec } from 'child_process';
 import readline from 'readline';
 import chalk from 'chalk';
-import { askModel } from '../clients/ollama.js';
-import { readConfig } from '../utils.js';
+import { getService } from '../utils.js';  // Se obtiene el servicio configurado
 
 /**
  * Function to get the staged diff in the Git repository.
@@ -20,12 +19,30 @@ async function getStagedDiff() {
 }
 
 /**
+ * Function to load the appropriate service functions based on the current configuration.
+ * 
+ * @returns {Object} - Returns an object containing the appropriate `askModelJson` function.
+ */
+async function loadServiceFunctions() {
+  const service = getService();  // Retrieve the service from utils (e.g., 'ollama' or 'openai')
+
+  if (service === 'openai') {
+    const { askModelJson } = await import('../clients/openai.js');
+    return { askModelJson };
+  } else if (service === 'ollama') {
+    const { askModelJson } = await import('../clients/ollama.js');
+    return { askModelJson };
+  } else {
+    throw new Error(`Unknown service: ${service}`);
+  }
+}
+
+/**
  * Function to generate a commit message based on the staged Git diff and the model's response.
  * 
  * @returns {Promise<{title: string, description: string} | false>} - A JSON with the title and description using conventional commits, or false if the process fails.
  */
 export async function generateCommitMessage() {
-  const { model } = readConfig();
   const diff = await getStagedDiff();
   
   if (!diff) {
@@ -54,11 +71,11 @@ export async function generateCommitMessage() {
   ${diff}
   
   Give me a JSON with only the title and description using conventional commits`.trim();
-  
-  const response = await askModel({
-    model,
+
+  const { askModelJson } = await loadServiceFunctions();
+
+  const response = await askModelJson({
     messages: [{ role: 'user', content: message }],
-    format: 'json',
   });
 
   if (!response) {

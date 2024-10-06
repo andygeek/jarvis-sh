@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { openEditor, setModel } from './src/utils.js';
+import { openEditor, setModel, setServiceApiKey, setService } from './src/utils.js';
 import { generateCommitMessage, askCommitConfirmationAndExecute } from './src/commands/commit.js';
 import { handleCommandOrQuestion } from './src/questionHandler.js';
 
@@ -30,6 +30,26 @@ if (args.includes('/commit')) {
     process.exit(1);
   }
   setModel(model);
+
+// Check for the --service-api-key flag to store the API key.
+} else if (args.includes('--service-api-key')) {
+  const keyIndex = args.indexOf('--service-api-key');
+  const apiKey = args[keyIndex + 1];
+  if (!apiKey) {
+    console.error('Please provide an API key after "--service-api-key"');
+    process.exit(1);
+  }
+  setServiceApiKey(apiKey);
+
+// Check for the --service flag to store the service name.
+} else if (args.includes('--service')) {
+  const serviceIndex = args.indexOf('--service');
+  const service = args[serviceIndex + 1];
+  if (!service) {
+    console.error('Please provide a service name after "--service"');
+    process.exit(1);
+  }
+  setService(service);
 
 // Default behavior: handle the input as a command or question.
 } else {

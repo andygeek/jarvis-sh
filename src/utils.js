@@ -42,18 +42,25 @@ export function saveConfig(config) {
 }
 
 /**
- * Asynchronous function to set a model globally after verifying its existence in Ollama.
+ * Asynchronous function to set a model globally after verifying its existence in Ollama,
+ * or simply set the model without verification if the service is not Ollama.
  * 
  * @param {string} model - The name of the model to set.
  */
 export async function setModel(model) {
-  const modelExists = await checkModelExists(model);
+  const service = getService();  // Verifica el servicio configurado
 
-  if (!modelExists) {
-    console.error(`Model "${model}" does not exist.`);
-    process.exit(1);
+  if (service === 'ollama') {
+    // Si el servicio es Ollama, verificamos si el modelo existe
+    const modelExists = await checkModelExists(model);
+
+    if (!modelExists) {
+      console.error(`Model "${model}" does not exist in Ollama.`);
+      process.exit(1);  // Termina la ejecución si el modelo no existe
+    }
   }
 
+  // Si el servicio es otro, o el modelo existe en Ollama, guarda el modelo
   const config = readConfig();
   config.model = model;
   saveConfig(config);
@@ -64,7 +71,7 @@ export async function setModel(model) {
  * Asynchronous function to check if a specific model exists and is installed in Ollama.
  * 
  * @param {string} model - The name of the model to check.
- * @returns {Promise<boolean>} - Returns `true` if the model exists and is installed, 
+ * @returns {Promise<boolean>} - Returns `true` if the model exists and is installed in Ollama,
  *                               otherwise returns `false`.
  */
 async function checkModelExists(model) {
@@ -165,4 +172,58 @@ export function executeCommand(command) {
       }
     });
   });
+}
+
+/**
+ * Function to set the Service API key globally.
+ * 
+ * @param {string} apiKey - The Service API key to be saved.
+ */
+export function setServiceApiKey(apiKey) {
+  const config = readConfig();
+  config.service_api_key = apiKey;
+  saveConfig(config);
+  console.log(`Service API key has been set.`);
+}
+
+/**
+ * Function to retrieve the Service API key from the config.
+ * 
+ * @returns {string | null} - Returns the Service API key if it exists, or null if not set.
+ */
+export function getServiceApiKey() {
+  const config = readConfig();
+  return config.service_api_key || null;
+}
+
+/**
+ * Function to retrieve the model name from the config.
+ * 
+ * @returns {string | null} - Returns the model name if it exists, or null if not set.
+ */
+export function getModel() {
+  const config = readConfig();
+  return config.model || null;
+}
+
+/**
+ * Function to set the service name globally.
+ * 
+ * @param {string} service - The service name to be saved (e.g., 'ollama', 'openai', 'anthropic').
+ */
+export function setService(service) {
+  const config = readConfig();
+  config.service = service;
+  saveConfig(config);
+  console.log(`Service has been set to: ${service}`);
+}
+
+/**
+ * Function to retrieve the service name from the config.
+ * 
+ * @returns {string | null} - Returns the service name if it exists, or null if not set.
+ */
+export function getService() {
+  const config = readConfig();
+  return config.service || null;
 }

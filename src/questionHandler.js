@@ -1,5 +1,4 @@
-import { askModel, askModelStream } from './clients/ollama.js';
-import { loadCustomCommandsContent, showCommandOptions, readConfig } from './utils.js';
+import { loadCustomCommandsContent, showCommandOptions, getService } from './utils.js';
 
 /**
  * Main function to handle user input, determining if it is a command or a general question.
@@ -24,24 +23,19 @@ export async function handleCommandOrQuestion(userInput) {
  * 
  * @param {string} userInput - The input string from the user.
  * @returns {Promise<boolean>} - Returns `true` if the input is identified as a command, otherwise `false`.
- * 
- * This function reads the model from the config and sends a prompt to it, asking whether the input
- * is about terminal commands. It expects a JSON response with a boolean `isCommand` field. If the 
- * response is not JSON or is malformed, it defaults to `false`.
  */
 async function checkIfCommand(userInput) {
-  const { model } = readConfig();
   const message = `
   Is the following question about terminal commands?
 
   ${userInput}
 
-  Respond with {"isCommand": true} for yes, and with {"isCommand": false} for no.`.trim();
+  Give me a JSON with {"isCommand": true} for yes, and with {"isCommand": false}.`.trim();
 
-  const response = await askModel({
-    model,
+  const { askModelJson } = await loadServiceFunctions();
+
+  const response = await askModelJson({
     messages: [{ role: 'user', content: message }],
-    format: 'json',
   });
 
   if (response === null) {
@@ -50,7 +44,6 @@ async function checkIfCommand(userInput) {
 
   try {
     const jsonResponse = JSON.parse(response);
-    // console.log('Model Answer 1:\n', jsonResponse);
     return jsonResponse.isCommand || false;
   } catch (error) {
     console.error('Error parsing model response:', error);
@@ -62,39 +55,77 @@ async function checkIfCommand(userInput) {
  * Function to handle input identified as a command.
  * 
  * @param {string} userInput - The command input from the user.
- * 
- * This function reads available custom commands and passes them to the model to identify potential 
- * commands that match the user's request. The model's response is expected in JSON format with a 
- * "commands" array. If no matching commands are found, a message is logged.
  */
 async function handleCommand(userInput) {
-  const { model } = readConfig();
   const customCommandsContent = loadCustomCommandsContent();
   const fullMessage = `
   Custom commands available:
   ${customCommandsContent}
 
-  Taking that into account, respond with a JSON containing a list of commands that can solve the following request, and if no specific commands fit or if additional context is needed, you can also rely on your general knowledge to provide the best possible answer:
+  Taking that into account, respond with a JSON containing a list of commands that can solve the following request:
 
   ${userInput}
 
-  JSON must be in the following format only:
+  Give me a JSON in the following format: 
   {
   "commands": ["command1", "command2", "..."]
   }
   `.trim();
 
-  const responseContent = await askModel({
-    model,
+  const { askModelJson } = await loadServiceFunctions();
+
+  const responseContent = await askModelJson({
     messages: [{ role: 'user', content: fullMessage }],
-    format: 'json',
   });
 
   if (responseContent === null) {
     return;
   }
 
-  // console.log('Model Answer 2:\n', responseContent);
+  let commandsList = [];
+  try {
+    const jsonResponse = JSON.parse(responseContent);
+    commandsList = jsonResponse.commands || [];
+  } catch (error) {
+    console.error('Error parsing JSON response from model:', error);
+    return;
+  }
+
+  if (commandsList.length === 0) {
+    await generateOtherCommands(userInput);
+  }
+
+  await showCommandOptions(commandsList);
+}
+
+/**
+ * Function to handle input identified as a command.
+ * 
+ * @param {string} userInput - The command input from the user.
+ */
+async function generateOtherCommands(userInput) {
+  const customCommandsContent = loadCustomCommandsContent();
+  const fullMessage = `
+  Respond with a JSON containing a list of commands that can solve the following request:
+
+  ${userInput}
+
+  Give me a JSON in the following format: 
+  {
+  "commands": ["command1", "command2", "..."]
+  }
+  `.trim();
+
+  const { askModelJson } = await loadServiceFunctions();
+
+  const responseContent = await askModelJson({
+    messages: [{ role: 'user', content: fullMessage }],
+  });
+
+  if (responseContent === null) {
+    return;
+  }
+
   let commandsList = [];
   try {
     const jsonResponse = JSON.parse(responseContent);
@@ -116,14 +147,12 @@ async function handleCommand(userInput) {
  * Function to handle input identified as a general question.
  * 
  * @param {string} userInput - The question input from the user.
- * 
- * This function streams the model's response to the terminal. It uses `askModelStream`, which returns 
- * a generator that yields parts of the model's answer. The output is displayed to the user in real-time.
  */
 async function handleQuestion(userInput) {
-  const { model } = readConfig();
+  const service = getService(); 
+  const { askModelStream } = await loadServiceFunctions();  // Load the streaming handler for the service
+
   const responseGenerator = await askModelStream({
-    model,
     messages: [{ role: 'user', content: userInput }],
   });
 
@@ -131,7 +160,34 @@ async function handleQuestion(userInput) {
     return;
   }
 
-  for await (const part of responseGenerator) {
-    process.stdout.write(part.message.content);
+  if (service === 'ollama') {
+    for await (const part of responseGenerator) {
+      process.stdout.write(part.message.content);
+    }
+  } else if (service == 'openai') {
+    for await (const chunk of responseGenerator) {
+      process.stdout.write(chunk.choices[0]?.delta?.content || "");
+    }
+  } else {
+    throw new Error(`Unknown service: ${service}`);
+  }
+}
+
+/**
+ * Utility function to load the appropriate service functions based on the current configuration.
+ * 
+ * @returns {Object} - Returns an object containing `askModelJson`, `askModel`, and `askModelStream` functions.
+ */
+async function loadServiceFunctions() {
+  const service = getService();
+
+  if (service === 'openai') {
+    const { askModelJson, askModel, askModelStream } = await import('./clients/openai.js');
+    return { askModelJson, askModel, askModelStream };
+  } else if (service === 'ollama') {
+    const { askModelJson, askModel, askModelStream } = await import('./clients/ollama.js');
+    return { askModelJson, askModel, askModelStream };
+  } else {
+    throw new Error(`Unknown service: ${service}`);
   }
 }
