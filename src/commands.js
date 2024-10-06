@@ -1,4 +1,4 @@
-import { askModel, askModelStream } from './ollamaClient.js';
+import { askModel, askModelStream } from './clients/ollama.js';
 import { loadCustomCommandsContent, showCommandOptions, readConfig } from './utils.js';
 
 /**

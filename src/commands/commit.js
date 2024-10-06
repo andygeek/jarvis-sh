@@ -1,7 +1,7 @@
 import { execSync, exec } from 'child_process';
 import readline from 'readline';
 import chalk from 'chalk';
-import { askModel } from '../ollamaClient.js';
+import { askModel } from '../clients/ollama.js';
 import { readConfig } from '../utils.js';
 
 /**
