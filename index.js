@@ -1,12 +1,24 @@
 #!/usr/bin/env node
-import { handleCommandOrQuestion } from './src/commands.js';
 import { openEditor, setModel } from './src/utils.js';
+import { generateCommitMessage, askCommitConfirmationAndExecute } from './src/commands/commit.js';
+import { handleCommandOrQuestion } from './src/commands.js';
 
 // Capture command-line arguments.
 const args = process.argv.slice(2);
 
+// Capture /commit command
+if (args.includes('/commit')) {
+  const commitData = await generateCommitMessage();
+
+  if (!commitData) {
+    process.exit(1);
+  }
+
+  const { title, description } = commitData;
+  askCommitConfirmationAndExecute(title, description);
+
 // Capture command-line arguments.
-if (args.includes('--commands')) {
+} else if (args.includes('--commands')) {
   openEditor();
 
 // Check for the `--model` flag to set a specific model.
