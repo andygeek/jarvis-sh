@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { openEditor, setModel } from './src/utils.js';
 import { generateCommitMessage, askCommitConfirmationAndExecute } from './src/commands/commit.js';
-import { handleCommandOrQuestion } from './src/commands.js';
+import { handleCommandOrQuestion } from './src/questionHandler.js';
 
 // Capture command-line arguments.
 const args = process.argv.slice(2);
