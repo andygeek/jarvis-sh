@@ -1,23 +1,20 @@
 import ollama from 'ollama';
+import { getModel } from '../utils.js';
 
 /**
- * Function to send a formatted message to a specified model in Ollama and return the response.
+ * Function to send a message to the Ollama model and return the response.
  * 
  * @param {Object} params - The parameters for the request.
- * @param {string} params.model - The model name to use in Ollama.
  * @param {Array} params.messages - An array of message objects to send to the model.
- * @param {string} params.format - The format for the response output.
  * @returns {Promise<string|null>} - The model's response message content, or `null` if an error occurs.
- * 
- * This function attempts to retrieve a response from the specified model using `ollama.chat()`. 
- * If the model is not installed, it logs a relevant message. If Ollama is not running, it logs a 
  */
-export async function askModel({ model, messages, format }) {
+export async function askModel({ messages }) {
   try {
+    const model = getModel();  // Get the model from utils.js
+
     const response = await ollama.chat({
       model,
       messages,
-      format,
     });
 
     return response.message.content.trim();
@@ -47,16 +44,14 @@ export async function askModel({ model, messages, format }) {
  * Function to send a message to a model in Ollama and retrieve a streaming response.
  * 
  * @param {Object} params - The parameters for the request.
- * @param {string} params.model - The model name to use in Ollama.
  * @param {Array} params.messages - An array of message objects to send to the model.
  * @returns {Promise<AsyncGenerator|null>} - An async generator yielding the streaming response 
  *                                           from the model, or `null` if an error occurs.
- * 
- * This function sends a message to the specified model in streaming mode. It uses `ollama.chat()` 
- * with the `stream` option set to `true`. If the model is not installed, it logs an error message. 
  */
-export async function askModelStream({ model, messages }) {
+export async function askModelStream({ messages }) {
   try {
+    const model = getModel();  // Get the model from utils.js
+
     const responseGenerator = await ollama.chat({
       model,
       messages,
@@ -83,5 +78,29 @@ export async function askModelStream({ model, messages }) {
       console.error('Error processing the request:', error);
       return null;
     }
+  }
+}
+
+/**
+ * Function to send a message to the Ollama model and return the response in JSON format.
+ * 
+ * @param {Object} params - The parameters for the request.
+ * @param {Array} params.messages - An array of message objects to send to the model.
+ * @returns {Promise<string|null>} - The model's response message content as JSON, or `null` if an error occurs.
+ */
+export async function askModelJson({ messages }) {
+  try {
+    const model = getModel();  // Get the model from utils.js
+
+    const response = await ollama.chat({
+      model,
+      messages,
+      format: 'json',
+    });
+
+    return response.message.content.trim();
+  } catch (error) {
+    console.error('Error processing the request:', error);
+    return null;
   }
 }
