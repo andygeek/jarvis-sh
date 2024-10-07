@@ -1,22 +1,18 @@
 # Jarvis-sh
 
+An AI-powered command-line assistant for your terminal, compatible with both local AI models via Ollama and OpenAI. It not only supports executing commands but also intelligently suggests and finds commands from its own knowledge base or a predefined list, taking your productivity as a developer or DevOps engineer to the next level.
+
 <div align="center">
   <img src="https://raw.githubusercontent.com/andygeek/jarvis-sh/refs/heads/master/assets/logo.png" alt="Descripción de la imagen" width="200px" />
 </div>
-
-An AI-powered command-line assistant for your terminal.
-
-## Description
-
-Jarvis-sh is a console-based AI assistant that allows you to execute commands and ask questions directly from your terminal. It leverages local AI models through [Ollama](https://ollama.ai/) to provide fast and secure AI capabilities without relying on cloud services.
 
 ## Prerequisites
 
 Before installing Jarvis-sh, ensure you have the following:
 
-- **Node.js**: Version 14 or higher is recommended.
-- **Ollama**: A runtime for large language models. Install it from [here](https://ollama.ai/).
-- **AI Model**: A local AI model compatible with Ollama. We recommend using `llama3.2`.
+- **Node.js**: Version 14 or higher is recommended. This is required for running Jarvis-sh.
+- **Ollama** (Optional): If you want to use local open-source AI models, you'll need to install Ollama, a runtime for large language models. You can install it from [here](https://ollama.ai/).
+- **AI Model** (Optional): A local AI model compatible with Ollama. We recommend using `llama3.2`. Make sure the model is downloaded and available for use.
 
 ### Installing Ollama
 
@@ -30,7 +26,7 @@ After installing Ollama, install the `llama3.2` model by running:
 ollama pull llama3.2
 ```
 
-## Installation
+## Installation jarvis-sh
 
 Install Jarvis-sh globally using npm:
 
@@ -39,6 +35,37 @@ npm install -g jarvis-sh
 ```
 
 This will make the `jarvis` command available globally on your system.
+
+## Configuration
+
+### AI Service
+
+First, you need to configure the AI service you will use:
+
+```bash
+jarvis --service <service>
+```
+
+Currently, we support `ollama` and `openai`. More services, such as **Gemini** and **Claude**, will be added soon.
+
+### AI Model
+
+Next, configure the AI model you want to use:
+
+```bash
+jarvis --model <model>
+```
+
+For OpenAI, the available models are those supported by the OpenAI API. We recommend using `gpt-4o-mini` for its low cost.
+For **Ollama**, the models are those you have installed locally. You can use the command `ollama list` to see all installed models.
+
+### API Key (For OpenAI)
+
+If you're using a closed service like **OpenAI**, you need to set your API key. You can obtain this key from the OpenAI website.
+
+```bash
+jarvis --service-api-key <api-key>
+```
 
 ## Usage
 
@@ -54,52 +81,14 @@ jarvis Hello
 
 Jarvis-sh will provide an answer directly in the terminal.
 
-## Shell Configuration for Zsh Users
-
-If you're using the Zsh shell and want to use the `?` symbol at the end of your questions without any issues, you need to prevent Zsh from interpreting the `?` as a globbing character.
-
-### Adding an Alias
-
-Add the following alias to your `~/.zshrc` file:
-
-```bash
-alias jarvis='noglob jarvis'
-```
-
-This tells Zsh not to perform filename expansion (globbing) on the arguments passed to `jarvis`.
-
-### How to Add the Alias Using Nano
-
-Open your `~/.zshrc` file with nano:
-
-```bash
-nano ~/.zshrc
-```
-
-Add the alias:
-
-```bash
-alias jarvis='noglob jarvis'
-```
-
-Save and reload your Zsh configuration:
-
-```bash
-source ~/.zshrc
-```
-
-Now you can use the `?` symbol at the end of your questions without any issues:
-
-```bash
-jarvis what is the capital of France?
-```
+If you want to use the `?` symbol at the end of your questions to Jarvis, you need to apply the [following configuration](.doc/ZshUsers.md) in your terminal.
 
 ### Execute Commands
 
 If your input relates to terminal commands, Jarvis-sh will suggest commands that you can execute.
 
 ```bash
-jarvis show me the commands to generate an apk
+jarvis show me the commands to generate an apk?
 ```
 
 You will be presented with a list of commands to choose from. Select the desired command to execute it.
@@ -114,21 +103,22 @@ jarvis --commands
 
 This will open a text editor (default is `nano` unless specified in the `EDITOR` environment variable) where you can add your custom commands.
 
-### Set the AI Model
+## Tools
 
-To change the AI model used by Jarvis-sh:
-
-```bash
-jarvis --model <model-name>
-```
-
-For example:
+Currently, we offer a tool called `/commit`, which generates the title and description of your staged changes in your Git repository using the **Conventional Commits** format. To use it, simply run the following command:
 
 ```bash
-jarvis --model llama3.2
+jarvis /commit
 ```
 
-Make sure the model is installed in Ollama before setting it.
+Example response:
+```bash
+Title: feat: update README with new configuration options and services
+Description: Enhanced the README.md by adding new sections for AI service configuration, model configuration, and API key setup for OpenAI. Updated prerequisites to clarify the installation requirements for Node.js and Ollama. Improved descriptions for features and included instructions for service options, enhancing overall clarity and usability.
+Do you want to commit with this message? (y/n)
+```
+
+More tools will be added soon.
 
 ## Troubleshooting
 
