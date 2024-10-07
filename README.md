@@ -81,7 +81,7 @@ jarvis Hello
 
 Jarvis-sh will provide an answer directly in the terminal.
 
-If you want to use the `?` symbol at the end of your questions to Jarvis, you need to apply the [following configuration](.doc/ZshUsers.md) in your terminal.
+If you want to use the `?` symbol at the end of your questions to Jarvis, you need to apply the [following configuration](doc/ZshUsers.md) in your terminal.
 
 ### Execute Commands
 
