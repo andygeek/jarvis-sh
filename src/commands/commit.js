@@ -66,7 +66,7 @@ export async function generateCommitMessage() {
   
   ---
   
-  Use the following git diff and give me the title and description for the commit using conventional commits:
+  Use the following git diff and give me the title and short description for the commit using conventional commits. The description must have a maximum of 30 words in English:
   
   ${diff}
   
