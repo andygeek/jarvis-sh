@@ -148,29 +148,16 @@ export async function showCommandOptions(commandsList) {
  * Function to execute a shell command and display its output.
  * 
  * @param {string} command - The shell command to be executed, including its arguments.
- * @returns {Promise<void>} - Resolves when the command finishes execution.
  * 
  * This function uses `spawn` to run the specified command asynchronously without blocking.
+ * The command's output is displayed directly in the current terminal, and the function does not return any value or handle success/failure cases explicitly.
  */
 export function executeCommand(command) {
   return new Promise((resolve, reject) => {
     const [cmd, ...args] = command.split(' ');
     console.log(`Executing command: ${command}`);
     
-    const child = spawn(cmd, args, { stdio: 'inherit' });
-
-    child.on('error', (error) => {
-      console.error(`Error executing command: ${error.message}`);
-      reject(error);
-    });
-
-    child.on('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(`Command failed with exit code ${code}`));
-      } else {
-        resolve();
-      }
-    });
+    spawn(cmd, args, { stdio: 'inherit' });
   });
 }
 
