@@ -10,8 +10,26 @@
   "bin": {
     "jarvis": "./index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "AI",
+    "command-line",
+    "assistant",
+    "terminal",
+    "productivity",
+    "developer",
+    "DevOps",
+    "automation",
+    "commands",
+    "suggestions",
+    "ollama",
+    "openai",
+    "local-models",
+    "AI-models",
+    "tool",
+    "developer-tools",
+    "Jarvis"
+  ],
+  "author": "AndyDev",
   "license": "MIT",
   "repository": {
     "type": "git",
