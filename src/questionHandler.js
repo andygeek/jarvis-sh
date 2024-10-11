@@ -1,4 +1,7 @@
 import { loadCustomCommandsContent, showCommandOptions, getService } from './utils.js';
+import ora from 'ora';
+
+const spinner = ora();
 
 /**
  * Main function to handle user input, determining if it is a command or a general question.
@@ -6,6 +9,7 @@ import { loadCustomCommandsContent, showCommandOptions, getService } from './uti
  * @param {string} userInput - The input provided by the user.
  */
 export async function handleCommandOrQuestion(userInput) {
+  spinner.start('Thinking...');
   try {
     const isCommand = await checkIfCommand(userInput);
     if (isCommand) {
@@ -14,6 +18,7 @@ export async function handleCommandOrQuestion(userInput) {
       await handleQuestion(userInput);
     }
   } catch (error) {
+    spinner.succeed();
     console.error('An unexpected error occurred while processing the request:', error);
   }
 }
@@ -46,6 +51,7 @@ async function checkIfCommand(userInput) {
     const jsonResponse = JSON.parse(response);
     return jsonResponse.isCommand || false;
   } catch (error) {
+    spinner.succeed();
     console.error('Error parsing model response:', error);
     return false;
   }
@@ -81,7 +87,7 @@ async function handleCommand(userInput) {
   if (responseContent === null) {
     return;
   }
-
+  
   let commandsList = [];
   try {
     const jsonResponse = JSON.parse(responseContent);
@@ -94,7 +100,7 @@ async function handleCommand(userInput) {
   if (commandsList.length === 0) {
     await generateOtherCommands(userInput);
   }
-
+  spinner.succeed();
   await showCommandOptions(commandsList);
 }
 
@@ -136,10 +142,11 @@ async function generateOtherCommands(userInput) {
   }
 
   if (commandsList.length === 0) {
+    spinner.succeed();
     console.log('No commands found for the given request.');
     return;
   }
-
+  spinner.succeed();
   await showCommandOptions(commandsList);
 }
 
@@ -157,18 +164,22 @@ async function handleQuestion(userInput) {
   });
 
   if (responseGenerator === null) {
+    spinner.succeed();
     return;
   }
 
   if (service === 'ollama') {
+    spinner.succeed();
     for await (const part of responseGenerator) {
       process.stdout.write(part.message.content);
     }
   } else if (service == 'openai') {
+    spinner.succeed();
     for await (const chunk of responseGenerator) {
       process.stdout.write(chunk.choices[0]?.delta?.content || "");
     }
   } else {
+    spinner.succeed();
     throw new Error(`Unknown service: ${service}`);
   }
 }
