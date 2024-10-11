@@ -142,6 +142,7 @@ export async function showCommandOptions(commandsList) {
     process.exit(1);
   }
   await executeCommand(selectedCommand);
+  process.exit(1);
 }
 
 /**
