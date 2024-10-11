@@ -1,7 +1,7 @@
 import { execSync, exec } from 'child_process';
 import readline from 'readline';
 import chalk from 'chalk';
-import { getService } from '../utils.js';  // Se obtiene el servicio configurado
+import { getService } from '../utils.js';
 
 /**
  * Function to get the staged diff in the Git repository.
