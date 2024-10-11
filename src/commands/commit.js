@@ -2,6 +2,9 @@ import { execSync, exec } from 'child_process';
 import readline from 'readline';
 import chalk from 'chalk';
 import { getService } from '../utils.js';
+import ora from 'ora';
+
+const spinner = ora();
 
 /**
  * Function to get the staged diff in the Git repository.
@@ -43,9 +46,11 @@ async function loadServiceFunctions() {
  * @returns {Promise<{title: string, description: string} | false>} - A JSON with the title and description using conventional commits, or false if the process fails.
  */
 export async function generateCommitMessage() {
+  spinner.start('Thinking...');
   const diff = await getStagedDiff();
   
   if (!diff) {
+    spinner.succeed();
     console.log('There are no staged changes to commit.');
     return false;
   }
@@ -79,11 +84,13 @@ export async function generateCommitMessage() {
   });
 
   if (!response) {
+    spinner.succeed();
     console.error('Error generating the commit message.');
     return false;
   }
 
   const { title, description } = JSON.parse(response);
+  spinner.succeed();
   return { title, description };
 }
 
