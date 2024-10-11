@@ -48,19 +48,17 @@ export function saveConfig(config) {
  * @param {string} model - The name of the model to set.
  */
 export async function setModel(model) {
-  const service = getService();  // Verifica el servicio configurado
+  const service = getService();
 
   if (service === 'ollama') {
-    // Si el servicio es Ollama, verificamos si el modelo existe
     const modelExists = await checkModelExists(model);
 
     if (!modelExists) {
       console.error(`Model "${model}" does not exist in Ollama.`);
-      process.exit(1);  // Termina la ejecución si el modelo no existe
+      process.exit(1);
     }
   }
 
-  // Si el servicio es otro, o el modelo existe en Ollama, guarda el modelo
   const config = readConfig();
   config.model = model;
   saveConfig(config);

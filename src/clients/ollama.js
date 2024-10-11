@@ -10,7 +10,7 @@ import { getModel } from '../utils.js';
  */
 export async function askModel({ messages }) {
   try {
-    const model = getModel();  // Get the model from utils.js
+    const model = getModel();
 
     const response = await ollama.chat({
       model,
@@ -50,7 +50,7 @@ export async function askModel({ messages }) {
  */
 export async function askModelStream({ messages }) {
   try {
-    const model = getModel();  // Get the model from utils.js
+    const model = getModel();
 
     const responseGenerator = await ollama.chat({
       model,

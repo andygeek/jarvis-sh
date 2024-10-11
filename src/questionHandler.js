@@ -157,7 +157,7 @@ async function generateOtherCommands(userInput) {
  */
 async function handleQuestion(userInput) {
   const service = getService(); 
-  const { askModelStream } = await loadServiceFunctions();  // Load the streaming handler for the service
+  const { askModelStream } = await loadServiceFunctions();
 
   const responseGenerator = await askModelStream({
     messages: [{ role: 'user', content: userInput }],
