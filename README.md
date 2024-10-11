@@ -10,7 +10,7 @@ An AI-powered command-line assistant for your terminal, compatible with both loc
 
 Before installing Jarvis-sh, ensure you have the following:
 
-- **Node.js**: Version 14 or higher is recommended. This is required for running Jarvis-sh.
+- **Node.js**: Version 19 or higher is recommended. This is required for running Jarvis-sh.
 - **Ollama** (Optional): If you want to use local open-source AI models, you'll need to install Ollama, a runtime for large language models. You can install it from [here](https://ollama.ai/).
 - **AI Model** (Optional): A local AI model compatible with Ollama. We recommend using `llama3.2`. Make sure the model is downloaded and available for use.
 
