@@ -139,7 +139,7 @@ export async function showCommandOptions(commandsList) {
   ]);
   if (selectedCommand === 'None') {
     console.log('No command will be executed.');
-    return;
+    process.exit(1);
   }
   await executeCommand(selectedCommand);
 }
