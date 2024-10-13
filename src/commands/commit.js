@@ -1,10 +1,8 @@
 import { execSync, exec } from 'child_process';
 import readline from 'readline';
 import chalk from 'chalk';
-import { getService } from '../utils.js';
-import ora from 'ora';
-
-const spinner = ora();
+import { commitMessage } from '../messages/commitMessages.js';
+import { MultiLlama, Pipeline } from 'multillama';
 
 /**
  * Function to get the staged diff in the Git repository.
@@ -21,76 +19,19 @@ async function getStagedDiff() {
   }
 }
 
-/**
- * Function to load the appropriate service functions based on the current configuration.
- * 
- * @returns {Object} - Returns an object containing the appropriate `askModelJson` function.
- */
-async function loadServiceFunctions() {
-  const service = getService();  // Retrieve the service from utils (e.g., 'ollama' or 'openai')
+export async function generateCommitMessage(model) {
+  const multillama = new MultiLlama();
 
-  if (service === 'openai') {
-    const { askModelJson } = await import('../clients/openai.js');
-    return { askModelJson };
-  } else if (service === 'ollama') {
-    const { askModelJson } = await import('../clients/ollama.js');
-    return { askModelJson };
-  } else {
-    throw new Error(`Unknown service: ${service}`);
-  }
-}
-
-/**
- * Function to generate a commit message based on the staged Git diff and the model's response.
- * 
- * @returns {Promise<{title: string, description: string} | false>} - A JSON with the title and description using conventional commits, or false if the process fails.
- */
-export async function generateCommitMessage() {
-  spinner.start('Thinking...');
   const diff = await getStagedDiff();
-  
-  if (!diff) {
-    spinner.succeed();
-    console.log('There are no staged changes to commit.');
-    return false;
-  }
+  const message = commitMessage(diff);
 
-  const message = `
-  Conventional Commits is a specification for writing consistent and meaningful commit messages. The structure of a conventional commit is as follows:
-  
-  <type>: <short description>
-  
-  - **type**: Specifies the category of the change. Common types are:
-    - 'feat': A new feature
-    - 'fix': A bug fix
-    - 'chore': Routine tasks or maintenance
-    - 'refactor': Code changes that don't affect functionality
-    - 'docs': Documentation-only changes
-    - 'test': Adding or updating tests
-    - 'style': Code style changes (e.g., formatting)
-  
-  ---
-  
-  Use the following git diff and give me the title and short description for the commit using conventional commits. The description must have a maximum of 30 words in English:
-  
-  ${diff}
-  
-  Give me a JSON with only the title and description using conventional commits`.trim();
-
-  const { askModelJson } = await loadServiceFunctions();
-
-  const response = await askModelJson({
-    messages: [{ role: 'user', content: message }],
+  const pipeline = new Pipeline();
+  pipeline.addStep(async (result) => {
+    return await multillama.useModel(model, result);
   });
 
-  if (!response) {
-    spinner.succeed();
-    console.error('Error generating the commit message.');
-    return false;
-  }
-
+  const response = await multillama.runSequentialPipeline(pipeline, message);
   const { title, description } = JSON.parse(response);
-  spinner.succeed();
   return { title, description };
 }
 
