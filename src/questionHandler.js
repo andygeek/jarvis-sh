@@ -1,204 +1,226 @@
-import { loadCustomCommandsContent, showCommandOptions, getService } from './utils.js';
-import ora from 'ora';
+import {
+  loadCustomCommandsContent,
+  showCommandOptions,
+  concatenateFileContents,
+  createFileInTargetFolder,
+  createOrUpdateFile
+} from './utils.js';
 
-const spinner = ora();
+import {
+  typeQuestionMessage,
+  findCommandMessage,
+  createTestMessage,
+  generateTestMessage,
+  generateOtherCommands,
+  createCodeMessage,
+  generateCodeMessage,
+  modifyCodeMessageClasification,
+  modifyCodeMessage
+} from './messages/generalMessages.js';
 
-/**
- * Main function to handle user input, determining if it is a command or a general question.
- * 
- * @param {string} userInput - The input provided by the user.
- */
-export async function handleCommandOrQuestion(userInput) {
-  spinner.start('Thinking...');
-  try {
-    const isCommand = await checkIfCommand(userInput);
-    if (isCommand) {
-      await handleCommand(userInput);
-    } else {
-      await handleQuestion(userInput);
-    }
-  } catch (error) {
-    spinner.succeed();
-    console.error('An unexpected error occurred while processing the request:', error);
-  }
+import { MultiLlama, Pipeline } from 'multillama';
+
+export async function handleCommandOrQuestion(modelText, modelJson, gpt4oJsonMax, userInput) {
+  const multillama = new MultiLlama();
+  const pipeline = new Pipeline();
+  pipeline.setEnableLogging(false);
+
+  const initialStep = createInitialStep(pipeline, multillama, modelJson);
+  const commandQuestionStep = createCommandQuestionSteps(pipeline, multillama, modelJson);
+  const creationTestQuestionStep = createTestQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax);
+  const creationCodeQuestionStep = createCodeQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax);
+  const modifyCodeQuestionStep = modifyCodeQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax);
+  const otherQuestionStep = createOtherQuestionStep(pipeline, multillama, modelText);
+
+  setupPipelineBranches(pipeline, initialStep, commandQuestionStep, creationTestQuestionStep, creationCodeQuestionStep, modifyCodeQuestionStep, otherQuestionStep);
+
+  const response = await pipeline.execute(userInput);
+  console.log(response);
+  return response;
 }
 
-/**
- * Function to determine if the user input represents a command.
- * 
- * @param {string} userInput - The input string from the user.
- * @returns {Promise<boolean>} - Returns `true` if the input is identified as a command, otherwise `false`.
- */
-async function checkIfCommand(userInput) {
-  const message = `
-  Is the following question about terminal commands?
-
-  ${userInput}
-
-  Give me a JSON with {"isCommand": true} for yes, and with {"isCommand": false}.`.trim();
-
-  const { askModelJson } = await loadServiceFunctions();
-
-  const response = await askModelJson({
-    messages: [{ role: 'user', content: message }],
-  });
-
-  if (response === null) {
-    return false;
-  }
-
-  try {
+function createInitialStep(pipeline, multillama, modelJson) {
+  const initialStep = pipeline.addStep(async (input, context) => {
+    const message = typeQuestionMessage(input);
+    const response = await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
     const jsonResponse = JSON.parse(response);
-    return jsonResponse.isCommand || false;
-  } catch (error) {
-    spinner.succeed();
-    console.error('Error parsing model response:', error);
-    return false;
-  }
-}
-
-/**
- * Function to handle input identified as a command.
- * 
- * @param {string} userInput - The command input from the user.
- */
-async function handleCommand(userInput) {
-  const customCommandsContent = loadCustomCommandsContent();
-  const fullMessage = `
-  Custom commands available:
-  ${customCommandsContent}
-
-  Taking that into account, respond with a JSON containing a list of commands that can solve the following request:
-
-  ${userInput}
-
-  Give me a JSON in the following format: 
-  {
-  "commands": ["command1", "command2", "..."]
-  }
-  `.trim();
-
-  const { askModelJson } = await loadServiceFunctions();
-
-  const responseContent = await askModelJson({
-    messages: [{ role: 'user', content: fullMessage }],
+    return jsonResponse.category;
   });
 
-  if (responseContent === null) {
-    return;
-  }
-  
-  let commandsList = [];
-  try {
-    const jsonResponse = JSON.parse(responseContent);
-    commandsList = jsonResponse.commands || [];
-  } catch (error) {
-    console.error('Error parsing JSON response from model:', error);
-    return;
-  }
-
-  if (commandsList.length === 0) {
-    await generateOtherCommands(userInput);
-  }
-  spinner.succeed();
-  await showCommandOptions(commandsList);
+  return initialStep;
 }
 
-/**
- * Function to handle input identified as a command.
- * 
- * @param {string} userInput - The command input from the user.
- */
-async function generateOtherCommands(userInput) {
-  const customCommandsContent = loadCustomCommandsContent();
-  const fullMessage = `
-  Respond with a JSON containing a list of commands that can solve the following request:
-
-  ${userInput}
-
-  Give me a JSON in the following format: 
-  {
-  "commands": ["command1", "command2", "..."]
-  }
-  `.trim();
-
-  const { askModelJson } = await loadServiceFunctions();
-
-  const responseContent = await askModelJson({
-    messages: [{ role: 'user', content: fullMessage }],
+function createCommandQuestionSteps(pipeline, multillama, modelJson) {
+  const commandQuestionStep = pipeline.addStep(async (input, context) => {
+    const customCommandsContent = loadCustomCommandsContent();
+    const message = findCommandMessage(customCommandsContent, context.initialInput);
+    const result = await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
+    const jsonResponse = JSON.parse(result);
+    const commandsList = jsonResponse.commands || [];
+    context.data['commandsList'] = commandsList;
+    return commandsList.length > 0;
   });
 
-  if (responseContent === null) {
-    return;
-  }
-
-  let commandsList = [];
-  try {
-    const jsonResponse = JSON.parse(responseContent);
-    commandsList = jsonResponse.commands || [];
-  } catch (error) {
-    console.error('Error parsing JSON response from model:', error);
-    return;
-  }
-
-  if (commandsList.length === 0) {
-    spinner.succeed();
-    console.log('No commands found for the given request.');
-    return;
-  }
-  spinner.succeed();
-  await showCommandOptions(commandsList);
-}
-
-/**
- * Function to handle input identified as a general question.
- * 
- * @param {string} userInput - The question input from the user.
- */
-async function handleQuestion(userInput) {
-  const service = getService(); 
-  const { askModelStream } = await loadServiceFunctions();
-
-  const responseGenerator = await askModelStream({
-    messages: [{ role: 'user', content: userInput }],
+  const showCommandOptionsStep = pipeline.addStep(async (input, context) => {
+    context.successSpinner();
+    await showCommandOptions(context.data['commandsList']);
   });
 
-  if (responseGenerator === null) {
-    spinner.succeed();
-    return;
-  }
+  const searchCommandStep = pipeline.addStep(async (input, context) => {
+    const message = generateOtherCommands(context.initialInput);
+    return await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
+  });
 
-  if (service === 'ollama') {
-    spinner.succeed();
-    for await (const part of responseGenerator) {
-      process.stdout.write(part.message.content);
-    }
-  } else if (service == 'openai') {
-    spinner.succeed();
-    for await (const chunk of responseGenerator) {
-      process.stdout.write(chunk.choices[0]?.delta?.content || "");
-    }
-  } else {
-    spinner.succeed();
-    throw new Error(`Unknown service: ${service}`);
-  }
+  const showNewCommandsStep = pipeline.addStep(async (input, context) => {
+    const jsonResponse = JSON.parse(input);
+    const commandsList = jsonResponse.commands || [];
+    context.successSpinner();
+    await showCommandOptions(commandsList);
+  });
+
+  searchCommandStep.nextNode = showNewCommandsStep;
+
+  pipeline.addBranch(commandQuestionStep, true, showCommandOptionsStep);
+  pipeline.addBranch(commandQuestionStep, false, searchCommandStep);
+
+  return commandQuestionStep;
 }
 
-/**
- * Utility function to load the appropriate service functions based on the current configuration.
- * 
- * @returns {Object} - Returns an object containing `askModelJson`, `askModel`, and `askModelStream` functions.
- */
-async function loadServiceFunctions() {
-  const service = getService();
+function createTestQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax) {
+  const testQuestionStep = pipeline.addStep(async (input, context) => {
+    const message = createTestMessage(context.initialInput);
+    return await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
+  });
 
-  if (service === 'openai') {
-    const { askModelJson, askModel, askModelStream } = await import('./clients/openai.js');
-    return { askModelJson, askModel, askModelStream };
-  } else if (service === 'ollama') {
-    const { askModelJson, askModel, askModelStream } = await import('./clients/ollama.js');
-    return { askModelJson, askModel, askModelStream };
-  } else {
-    throw new Error(`Unknown service: ${service}`);
-  }
+  const testFinalStep = pipeline.addStep(async (input, context) => {
+    const responseObj = JSON.parse(input);
+    const contextFiles = responseObj.context_or_examples;
+    const targetTestingFile = responseObj.target_testing_file;
+    context.data['targetFolderTest'] = responseObj.target_folder;
+    const moreContext = responseObj.more_context;
+
+    const concatenatedContextAndExamples = await concatenateFileContents(contextFiles);
+    const concatenatedTargetTestingFile = await concatenateFileContents([targetTestingFile]);
+    const message = generateTestMessage(
+      concatenatedContextAndExamples,
+      concatenatedTargetTestingFile,
+      moreContext
+    );
+
+    return await multillama.useModel(gpt4oJsonMax, [{ role: 'user', content: message }]);
+  });
+
+  const endStepTests = pipeline.addStep(async (input, context) => {
+    const responseCodeAndName = JSON.parse(input);
+    const name = responseCodeAndName.name;
+    const code = responseCodeAndName.code;
+
+    createFileInTargetFolder(context.data['targetFolderTest'], name, code);
+    return 'Se creó el archivo con éxito';
+  });
+
+  testQuestionStep.nextNode = testFinalStep;
+  testFinalStep.nextNode = endStepTests;
+
+  return testQuestionStep;
 }
+
+function createCodeQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax) {
+  const codeQuestionStep = pipeline.addStep(async (input, context) => {
+    const message = createCodeMessage(context.initialInput);
+    return await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
+  });
+
+  const codeFinalStep = pipeline.addStep(async (input, context) => {
+    const responseObj = JSON.parse(input);
+    const contextFiles = responseObj.context_or_examples;
+    const targetMessage = responseObj.target_message;
+    context.data['targetFolderCode'] = responseObj.target_folder;
+    const moreContext = responseObj.more_context;
+
+    const concatenatedContextAndExamples = await concatenateFileContents(contextFiles);
+    const message = generateCodeMessage(
+      concatenatedContextAndExamples,
+      moreContext,
+      targetMessage
+    );
+
+    return await multillama.useModel(gpt4oJsonMax, [{ role: 'user', content: message }]);
+  });
+
+  const endStepCode = pipeline.addStep(async (input, context) => {
+    const responseCodeAndName = JSON.parse(input);
+    const name = responseCodeAndName.name;
+    const code = responseCodeAndName.code;
+
+    createFileInTargetFolder(context.data['targetFolderCode'], name, code);
+    return 'Se creó el archivo con éxito';
+  });
+
+  codeQuestionStep.nextNode = codeFinalStep;
+  codeFinalStep.nextNode = endStepCode;
+
+  return codeQuestionStep;
+}
+
+function modifyCodeQuestionSteps(pipeline, multillama, modelJson, gpt4oJsonMax) {
+  const modifyQuestionStep = pipeline.addStep(async (input, context) => {
+    const message = modifyCodeMessageClasification(context.initialInput);
+    return await multillama.useModel(modelJson, [{ role: 'user', content: message }]);
+  });
+
+  const modifyFinalStep = pipeline.addStep(async (input, context) => {
+    const responseObj = JSON.parse(input);
+    const contextFiles = responseObj.context_or_examples;
+    const targetMessage = responseObj.target_message;
+    const targetModifyFile = responseObj.modify_file;
+    context.data['modifyPath'] = responseObj.modify_file;
+    // context.data['targetFolderCode'] = responseObj.target_folder;
+    const moreContext = responseObj.more_context;
+
+    const concatenatedContextAndExamples = await concatenateFileContents(contextFiles);
+    const concatenatedCode = await concatenateFileContents([targetModifyFile]);
+    const message = modifyCodeMessage(
+      concatenatedContextAndExamples,
+      concatenatedCode,
+      moreContext,
+      targetMessage
+    );
+
+    return await multillama.useModel(gpt4oJsonMax, [{ role: 'user', content: message }]);
+  });
+
+  const endStepCode = pipeline.addStep(async (input, context) => {
+    const responseCodeAndName = JSON.parse(input);
+    const code = responseCodeAndName.code;
+
+    createOrUpdateFile(context.data['modifyPath'], code);
+    return 'Se creó el archivo con éxito';
+  });
+
+  modifyQuestionStep.nextNode = modifyFinalStep;
+  modifyFinalStep.nextNode = endStepCode;
+
+  return modifyQuestionStep;
+}
+
+function createOtherQuestionStep(pipeline, multillama, modelText) {
+  const otherQuestionStep = pipeline.addStep(async (input, context) => {
+    return await multillama.useModel(modelText, [{role: 'user', content: context.initialInput}]);
+  });
+
+  return otherQuestionStep;
+}
+
+function setupPipelineBranches(pipeline, initialStep, commandQuestionStep, creationTestQuestionStep, creationCodeQuestionStep, modifyCodeQuestionStep, otherQuestionStep) {
+  pipeline.addBranch(initialStep, 'command_question', commandQuestionStep);
+  pipeline.addBranch(initialStep, 'creation_test_question', creationTestQuestionStep);
+  pipeline.addBranch(initialStep, 'creation_code_question', creationCodeQuestionStep);
+  pipeline.addBranch(initialStep, 'modification_code_question', modifyCodeQuestionStep);
+  pipeline.addBranch(initialStep, 'other_question', otherQuestionStep);
+}
+
+
+// Que pasa si no llega el target_folder, donde te entrego el codigo que hice
+// Un problema de jarvis es que pierde contexto. quizas usando ...jarvis o jarvis ... para que tome contexto anteriior y sigua la linea de preguntas.
+// Devolver comentarios adicionales luego de crear un codigo. Estos comentarios devolverlos en la consola

@@ -2,13 +2,95 @@
 import { openEditor, setModel, setServiceApiKey, setService } from './src/utils.js';
 import { generateCommitMessage, askCommitConfirmationAndExecute } from './src/commands/commit.js';
 import { handleCommandOrQuestion } from './src/questionHandler.js';
+import { MultiLlama, OpenAIAdapter, OllamaAdapter, AnthropicAdapter } from 'multillama';
+
+
+const openai = {
+  adapter: new OpenAIAdapter(),
+  apiKey: ''
+}
+
+const anthropic = {
+  adapter: new AnthropicAdapter(),
+  apiKey: ''
+}
+
+const claudeText = {
+  service: anthropic,
+  name: 'claude-3-5-sonnet-20240620',
+  response_format: 'text'
+}
+
+const claudeJson = {
+  service: anthropic,
+  name: 'claude-3-opus-20240229',
+  response_format: 'json',
+  max_tokens: 4000
+}
+
+const gpt4oJson = {
+  service: openai,
+  name: 'gpt-4o',
+  role: 'user',
+  response_format: 'json'
+}
+
+const gpt4oJsonMax = {
+  service: openai,
+  name: 'gpt-4o',
+  role: 'user',
+  response_format: 'json',
+  max_tokens: 4000
+}
+
+const gpt4oText = {
+  service: openai,
+  name: 'gpt-4o',
+  response_format: 'text'
+}
+
+const llama3_1Json = {
+  service: ollama,
+  name: 'llama3.1:8b',
+  response_format: 'json',
+}
+
+const llama3_1Text = {
+  service: ollama,
+  name: 'llama3.1:8b',
+  response_format: 'text'
+}
+
+const config = {
+  services: {
+    openai,
+    ollama,
+    anthropic
+  },
+  models: {
+    claudeText,
+    claudeJson,
+    gpt4oJson,
+    gpt4oText,
+    gpt4oJsonMax,
+    llama3_1Json,
+    llama3_1Text
+  },
+  spinnerConfig: {
+    loadingMessage: 'Thinking...',
+    successMessage: 'Your answer is ready!',
+    errorMessage: 'Uh-oh! It seems we hit a snag. Give it another go!',
+  },
+};
+
+MultiLlama.initialize(config);
 
 // Capture command-line arguments.
 const args = process.argv.slice(2);
 
 // Capture /commit command
 if (args.includes('/commit')) {
-  const commitData = await generateCommitMessage();
+  const commitData = await generateCommitMessage('claudeJson');
 
   if (!commitData) {
     process.exit(1);
@@ -60,5 +142,5 @@ if (args.includes('/commit')) {
     process.exit(1);
   }
 
-  handleCommandOrQuestion(userInput);
+  handleCommandOrQuestion('claudeText', 'claudeJson', 'claudeJson', userInput);
 }

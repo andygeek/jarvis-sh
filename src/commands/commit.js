@@ -26,11 +26,13 @@ export async function generateCommitMessage(model) {
   const message = commitMessage(diff);
 
   const pipeline = new Pipeline();
-  pipeline.addStep(async (result) => {
-    return await multillama.useModel(model, result);
-  });
 
-  const response = await multillama.runSequentialPipeline(pipeline, message);
+  pipeline.setEnableLogging(false);
+
+  pipeline.addStep(async (response) => {
+    return await multillama.useModel(model, [{role: 'user', content: response}]);
+  });
+  const response = await pipeline.execute(message);
   const { title, description } = JSON.parse(response);
   return { title, description };
 }

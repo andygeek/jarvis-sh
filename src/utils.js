@@ -1,5 +1,7 @@
 import { spawn, spawnSync } from 'child_process';
 import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+
 import os from 'os';
 import path from 'path';
 import inquirer from 'inquirer';
@@ -212,4 +214,52 @@ export function setService(service) {
 export function getService() {
   const config = readConfig();
   return config.service || null;
+}
+
+
+export async function concatenateFileContents(contextFiles) {
+  let result = '';
+
+  for (const filePath of contextFiles) {
+    try {
+      const fileContent = await fsPromises.readFile(filePath, 'utf-8');
+      result += `path: '${filePath}'\n\`\`\`\n${fileContent}\n\`\`\`\n\n`;
+    } catch (error) {
+      console.error(`Error reading file: ${filePath}`, error);
+    }
+  }
+
+  return result.trim();
+}
+
+export async function createFileInTargetFolder(targetFolder, name, code) {
+  try {
+    // Ensure the target folder exists
+    await fsPromises.mkdir(targetFolder, { recursive: true });
+
+    // Construct the full path to the new file
+    const filePath = path.join(targetFolder, name);
+
+    // Write the code to the file
+    await fsPromises.writeFile(filePath, code, 'utf-8');
+
+    console.log(`File created: ${filePath}`);
+  } catch (error) {
+    console.error('Error creating file:', error);
+  }
+}
+
+export async function createOrUpdateFile(filePath, code) {
+  try {
+    // Ensure the target folder exists
+    const targetFolder = path.dirname(filePath);
+    await fsPromises.mkdir(targetFolder, { recursive: true });
+
+    // Write the code to the file (overwrites if the file already exists)
+    await fsPromises.writeFile(filePath, code, 'utf-8');
+
+    console.log(`File created or updated: ${filePath}`);
+  } catch (error) {
+    console.error('Error creating or updating file:', error);
+  }
 }
