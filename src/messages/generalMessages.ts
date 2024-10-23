@@ -1,11 +1,11 @@
-export function isCommandMessage(userInput) {
+export function isCommandMessage(userInput: string): string {
   return `
   Is the following question about terminal commands?
   ${userInput}
   Give me a JSON with {"isCommand": true} for yes, and with {"isCommand": false}.`.trim();
 }
 
-export function typeQuestionMessage(userInput) {
+export function typeQuestionMessage(userInput: string): string {
   return `
   ${userInput}
   ---
@@ -18,7 +18,10 @@ export function typeQuestionMessage(userInput) {
   Think step by step, and give me the response in JSON format: {category: 'one_of_the_categories'}.`.trim();
 }
 
-export function findCommandMessage(customCommandsContent, userInput) {
+export function findCommandMessage(
+  customCommandsContent: string,
+  userInput: string,
+): string {
   return `Custom commands available:
   ${customCommandsContent}
 
@@ -33,30 +36,29 @@ export function findCommandMessage(customCommandsContent, userInput) {
   `.trim();
 }
 
-export function createTestMessage(userInput) {
+export function createTestMessage(userInput: string): string {
   return `
   ${userInput}
   ---
   From the previous question, extract the following information and return it in JSON format:
   1. **Target testing file**: An file path of the file that needs to be tested mentioned in the query.
   2. **Context or examples**: An array of files paths of context or examples mentioned in the query.
-  2. **Target Folder**: The destination folder where the action is supposed to take place (if mentioned).
-  3. **More Context**: Extract the additional context indicated in the previous question to create the unit tests without considering file paths or files.
+  3. **Target folder**: The destination folder where the action is supposed to take place (if mentioned).
+  4. **More context**: Extract the additional context indicated in the previous question to create the unit tests without considering file paths or files.
 
   If any of the elements are missing in the query, leave them as empty strings or an empty array.
 
   Return the information in this JSON structure:
   {
     "target_testing_file": "",
-    "context_or_examples": []
+    "context_or_examples": [],
     "target_folder": "",
     "more_context": ""
   }
   `.trim();
 }
 
-
-export function createCodeMessage(userInput) {
+export function createCodeMessage(userInput: string): string {
   return `
   ${userInput}
   ---
@@ -78,7 +80,7 @@ export function createCodeMessage(userInput) {
   `.trim();
 }
 
-export function modifyCodeMessageClasification(userInput) {
+export function modifyCodeMessageClasification(userInput: string): string {
   return `
   ${userInput}
   ---
@@ -100,9 +102,11 @@ export function modifyCodeMessageClasification(userInput) {
   `.trim();
 }
 
-
-
-export function generateTestMessage(contextAndExample, targetTest, moreContext) {
+export function generateTestMessage(
+  contextAndExample: string,
+  targetTest: string,
+  moreContext: string,
+): string {
   return `
     Taking into account the following code as an example or context:
     ${contextAndExample}
@@ -117,7 +121,11 @@ export function generateTestMessage(contextAndExample, targetTest, moreContext) 
     `;
 }
 
-export function generateCodeMessage(contextAndExample, moreContext, targetMessage) {
+export function generateCodeMessage(
+  contextAndExample: string,
+  moreContext: string,
+  targetMessage: string,
+): string {
   return `
     Taking into account the following code as an example or context:
     ${contextAndExample}
@@ -132,7 +140,12 @@ export function generateCodeMessage(contextAndExample, moreContext, targetMessag
     `;
 }
 
-export function modifyCodeMessage(contextAndExample, targetCode, moreContext, targetMessage) {
+export function modifyCodeMessage(
+  contextAndExample: string,
+  targetCode: string,
+  moreContext: string,
+  targetMessage: string,
+): string {
   return `
     Taking into account the following code as an example or context:
     ${contextAndExample}
@@ -150,7 +163,7 @@ export function modifyCodeMessage(contextAndExample, targetCode, moreContext, ta
     `;
 }
 
-export function generateOtherCommands(userInput) {
+export function generateOtherCommands(userInput: string): string {
   return `
     Respond with a JSON containing a list of commands that can solve the following request:
 

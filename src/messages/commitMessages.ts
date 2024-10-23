@@ -1,4 +1,4 @@
-export function commitMessage(diff) {
+export function commitMessage(diff: string): string {
   return `
   Conventional Commits is a specification for writing consistent and meaningful commit messages. The structure of a conventional commit is as follows:
 

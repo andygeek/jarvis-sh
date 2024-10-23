@@ -4,12 +4,12 @@ import chalk from 'chalk';
 import { commitMessage } from '../messages/commitMessages.js';
 import { MultiLlama, Pipeline } from 'multillama';
 
-/**
- * Function to get the staged diff in the Git repository.
- * 
- * @returns {string | null} - The Git diff of staged changes as a string, or null if an error occurs.
- */
-async function getStagedDiff() {
+interface CommitData {
+  title: string;
+  description: string;
+}
+
+async function getStagedDiff(): Promise<string | null> {
   try {
     const diff = execSync('git diff --staged').toString();
     return diff;
@@ -19,18 +19,24 @@ async function getStagedDiff() {
   }
 }
 
-export async function generateCommitMessage(model) {
+export async function generateCommitMessage(
+  model: string,
+): Promise<CommitData | null> {
   const multillama = new MultiLlama();
 
   const diff = await getStagedDiff();
+  if (!diff) return null;
+
   const message = commitMessage(diff);
 
-  const pipeline = new Pipeline();
+  const pipeline = new Pipeline<string>();
 
   pipeline.setEnableLogging(false);
 
   pipeline.addStep(async (response) => {
-    return await multillama.useModel(model, [{role: 'user', content: response}]);
+    return await multillama.useModel(model, [
+      { role: 'user', content: response },
+    ]);
   });
   const response = await pipeline.execute(message);
   const { title, description } = JSON.parse(response);
@@ -39,15 +45,17 @@ export async function generateCommitMessage(model) {
 
 /**
  * Function to prompt the user if they want to proceed with the commit and perform the commit if confirmed.
- * 
- * @param {string} title - The commit title.
- * @param {string} description - The commit description.
  */
-export function askCommitConfirmationAndExecute(title, description) {
+export function askCommitConfirmationAndExecute(
+  title: string,
+  description: string,
+) {
   console.log(`\nCommit message generated:`);
   console.log(`${chalk.green('Title:')} ${title}`);
   console.log(`${chalk.green('Description:')} ${description}`);
-  console.log(`Do you want to commit with this message? ${chalk.green('(y/n)')}`);
+  console.log(
+    `Do you want to commit with this message? ${chalk.green('(y/n)')}`,
+  );
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -69,7 +77,7 @@ export function askCommitConfirmationAndExecute(title, description) {
         console.log(`Commit completed: ${stdout}`);
       });
     } else {
-      console.log("Commit canceled.");
+      console.log('Commit canceled.');
     }
     rl.close();
   });
