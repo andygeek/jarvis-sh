@@ -1,10 +1,14 @@
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 
-const CONFIG_PATH = path.join(
-  process.env.HOME || process.env.USERPROFILE || '.',
-  '.config/jarvisai/config.json',
-);
+const projectDir = path.join(os.homedir(), '.jarvissh');
+
+if (!fs.existsSync(projectDir)) {
+  fs.mkdirSync(projectDir);
+}
+
+const CONFIG_PATH = path.join(projectDir, 'jarvissh_config.json');
 
 export async function saveConfig(config: any): Promise<void> {
   try {
