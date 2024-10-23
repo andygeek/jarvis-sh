@@ -10,7 +10,6 @@ import { MultiLlama, Pipeline } from 'multillama';
 export async function handleCommandOrQuestion(
   modelText: string,
   modelJson: string,
-  gpt4oJsonMax: string,
   userInput: string,
 ): Promise<any> {
   const multillama = new MultiLlama();
@@ -27,19 +26,16 @@ export async function handleCommandOrQuestion(
     pipeline,
     multillama,
     modelJson,
-    gpt4oJsonMax,
   );
   const creationCodeQuestionStep = createCodeQuestionSteps(
     pipeline,
     multillama,
     modelJson,
-    gpt4oJsonMax,
   );
   const modifyCodeQuestionStep = modifyCodeQuestionSteps(
     pipeline,
     multillama,
     modelJson,
-    gpt4oJsonMax,
   );
   const otherQuestionStep = createOtherQuestionStep(
     pipeline,

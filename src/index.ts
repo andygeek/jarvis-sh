@@ -89,6 +89,7 @@ async function interactiveSetup() {
 
 async function initializeTool() {
   let configJson = await loadConfig();
+  let maxTokens = 8000;
 
   let config: Config = {
     services: {},
@@ -102,12 +103,14 @@ async function initializeTool() {
 
   switch (configJson.service) {
     case 'OpenAI':
+      maxTokens = 16384;
       config.services['OpenAI'] = {
         adapter: new OpenAiAdapter(),
         apiKey: configJson.apiKey,
       };
       break;
     case 'Anthropic':
+      maxTokens = 8192;
       config.services['Anthropic'] = {
         adapter: new AnthropicAdapter(),
         apiKey: configJson.apiKey,
@@ -150,7 +153,7 @@ async function initializeTool() {
       service: firstModel,
       name: configJson.model,
       response_format: 'json',
-      max_tokens: 16000,
+      max_tokens: maxTokens,
     };
   }
 

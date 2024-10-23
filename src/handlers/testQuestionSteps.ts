@@ -12,7 +12,6 @@ export function createTestQuestionSteps(
   pipeline: Pipeline<string>,
   multillama: MultiLlama,
   modelJson: string,
-  gpt4oJsonMax: string,
 ): PipelineNode<string, any> {
   const testQuestionStep = pipeline.addStep(async (input, context) => {
     const message = createTestMessage(context.initialInput);
@@ -39,7 +38,7 @@ export function createTestQuestionSteps(
       moreContext,
     );
 
-    return await multillama.useModel(gpt4oJsonMax, [
+    return await multillama.useModel(modelJson, [
       { role: 'user', content: message },
     ]);
   });

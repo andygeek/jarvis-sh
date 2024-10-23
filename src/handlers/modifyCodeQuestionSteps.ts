@@ -12,7 +12,6 @@ export function modifyCodeQuestionSteps(
   pipeline: Pipeline<string>,
   multillama: MultiLlama,
   modelJson: string,
-  gpt4oJsonMax: string,
 ): PipelineNode<string, any> {
   const modifyQuestionStep = pipeline.addStep(async (input, context) => {
     const message = modifyCodeMessageClasification(context.initialInput);
@@ -39,7 +38,7 @@ export function modifyCodeQuestionSteps(
       targetMessage,
     );
 
-    return await multillama.useModel(gpt4oJsonMax, [
+    return await multillama.useModel(modelJson, [
       { role: 'user', content: message },
     ]);
   });
