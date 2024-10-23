@@ -52,10 +52,7 @@ async function interactiveSetup() {
         choices:
           service === 'OpenAI'
             ? ['gpt-4o', 'gpt-4o-mini']
-            : [
-                'claude-3-5-sonnet-latest',
-                'claude-3-5-sonnet-20240620'
-              ],
+            : ['claude-3-5-sonnet-latest', 'claude-3-5-sonnet-20240620'],
       },
     ]);
 
@@ -158,11 +155,13 @@ async function initializeTool() {
 async function main() {
   const args = process.argv.slice(2);
 
-  await initializeTool();
-
   if (args.includes('--setup')) {
     await interactiveSetup();
-  } else if (args.includes('--show-config')) {
+  }
+
+  await initializeTool();
+
+  if (args.includes('--show-config')) {
     await showConfig();
   } else if (args.includes('--commands')) {
     openEditor();
