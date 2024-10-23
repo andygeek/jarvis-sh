@@ -3,7 +3,7 @@
 An AI-powered command-line assistant for your terminal, compatible with both local AI models via Ollama and OpenAI. It not only supports executing commands but also intelligently suggests and finds commands from its own knowledge base or a predefined list, taking your productivity as a developer or DevOps engineer to the next level.
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/andygeek/jarvis-sh/refs/heads/master/assets/logo.png" alt="Descripción de la imagen" width="200px" />
+  <img src="https://imgur.com/kpM3SQ2.png" alt="Descripción de la imagen" width="200px" />
 </div>
 
 ## Prerequisites
@@ -23,7 +23,7 @@ Follow the instructions on the [Ollama website](https://ollama.ai/) to install O
 After installing Ollama, install the `llama3.2` model by running:
 
 ```bash
-ollama pull llama3.2
+ollama pull llama3.1:8b
 ```
 
 ## Installation jarvis-sh
@@ -38,34 +38,27 @@ This will make the `jarvis` command available globally on your system.
 
 ## Configuration
 
-### AI Service
+### AI Service and Model
 
-First, you need to configure the AI service you will use:
-
-```bash
-jarvis --service <service>
-```
-
-Currently, we support `ollama` and `openai`. More services, such as **Gemini** and **Claude**, will be added soon.
-
-### AI Model
-
-Next, configure the AI model you want to use:
+You can set up both the AI service and the model using the interactive setup command:
 
 ```bash
-jarvis --model <model>
+jarvis --setup
 ```
 
-For OpenAI, the available models are those supported by the OpenAI API. We recommend using `gpt-4o-mini` for its low cost.
-For **Ollama**, the models are those you have installed locally. You can use the command `ollama list` to see all installed models.
+This command will guide you through selecting the AI service and model. Currently, we support the following services:
 
-### API Key (For OpenAI)
+- `OpenAI`
+- `Anthropic`
+- `Ollama`
 
-If you're using a closed service like **OpenAI**, you need to set your API key. You can obtain this key from the OpenAI website.
+For **OpenAI** and **Anthropic**, you will need to provide an API key, which you can obtain from the respective provider. For **Ollama**, the models available are those installed locally, and you can list them using `ollama list`.
 
-```bash
-jarvis --service-api-key <api-key>
-```
+### API Key (For OpenAI and Anthropic)
+
+If you choose **OpenAI** or **Anthropic** as your AI service, you will be prompted to enter your API key during the setup process. Be sure to have it ready beforehand.
+
+This is all handled automatically when using the `--setup` command, so no need for additional configuration commands.
 
 ## Usage
 
