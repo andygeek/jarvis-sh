@@ -1,8 +1,8 @@
 {
   "name": "jarvis-sh",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "type": "module",
-  "description": "",
+  "description": "An AI-powered command-line assistant for your terminal.",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -36,6 +36,7 @@
     "chalk": "^5.3.0",
     "fs-extra": "^11.2.0",
     "inquirer": "^11.1.0",
+    "multillama": "^1.2.3",
     "ollama": "^0.5.9"
   },
   "author": "AndyDev",
