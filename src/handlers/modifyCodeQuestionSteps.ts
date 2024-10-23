@@ -1,4 +1,7 @@
-import { concatenateFileContents, createOrUpdateFile } from '../utils.js';
+import {
+  concatenateFileContents,
+  createOrUpdateFile,
+} from '../utils/fileUtils.js';
 import {
   modifyCodeMessageClasification,
   modifyCodeMessage,
