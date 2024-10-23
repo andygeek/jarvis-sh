@@ -1,4 +1,7 @@
-import { loadCustomCommandsContent, showCommandOptions } from '../utils.js';
+import {
+  loadCustomCommandsContent,
+  showCommandOptions,
+} from '../utils/commandUtils.js';
 import {
   findCommandMessage,
   generateOtherCommands,
@@ -7,7 +10,6 @@ import {
   Pipeline,
   PipelineNode,
   PipelineContext,
-  ModelConfig,
   MultiLlama,
 } from 'multillama';
 
