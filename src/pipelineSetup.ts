@@ -1,9 +1,4 @@
 import { Pipeline, PipelineNode } from 'multillama';
-import { createCommandQuestionSteps } from './handlers/commandQuestionSteps.js';
-import { createTestQuestionSteps } from './handlers/testQuestionSteps.js';
-import { createCodeQuestionSteps } from './handlers/codeQuestionSteps.js';
-import { modifyCodeQuestionSteps } from './handlers/modifyCodeQuestionSteps.js';
-import { createOtherQuestionStep } from './handlers/otherQuestionSteps.js';
 
 export function setupPipelineBranches(
   pipeline: Pipeline<string>,
