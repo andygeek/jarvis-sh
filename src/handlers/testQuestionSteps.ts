@@ -1,9 +1,12 @@
-import { concatenateFileContents, createFileInTargetFolder } from '../utils.js';
+import {
+  concatenateFileContents,
+  createFileInTargetFolder,
+} from '../utils/fileUtils.js';
 import {
   createTestMessage,
   generateTestMessage,
 } from '../messages/generalMessages.js';
-import { ModelConfig, MultiLlama, Pipeline, PipelineNode } from 'multillama';
+import { MultiLlama, Pipeline, PipelineNode } from 'multillama';
 
 export function createTestQuestionSteps(
   pipeline: Pipeline<string>,
