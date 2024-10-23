@@ -1,12 +1,12 @@
 import { typeQuestionMessage } from '../messages/generalMessages.js';
-import { ModelConfig, MultiLlama, Pipeline, PipelineNode } from 'multillama';
+import { MultiLlama, Pipeline, PipelineNode } from 'multillama';
 
 export function createInitialStep(
   pipeline: Pipeline<string>,
   multillama: MultiLlama,
   modelJson: string,
 ): PipelineNode<string, any> {
-  const initialStep = pipeline.addStep(async (input: string, context) => {
+  const initialStep = pipeline.addStep(async (input: string) => {
     const message = typeQuestionMessage(input);
     const response = await multillama.useModel(modelJson, [
       { role: 'user', content: message },
