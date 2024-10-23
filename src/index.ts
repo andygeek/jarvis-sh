@@ -137,7 +137,6 @@ async function initializeTool() {
       service: config.services[0],
       name: firstOllamaModel,
       response_format: 'json',
-      max_tokens: 16000,
     };
   } else {
     const [, firstModel] = Object.entries(config.services)[0];
@@ -151,6 +150,7 @@ async function initializeTool() {
       service: firstModel,
       name: configJson.model,
       response_format: 'json',
+      max_tokens: 16000,
     };
   }
 
@@ -185,7 +185,7 @@ async function main() {
       process.exit(1);
     }
 
-    await handleCommandOrQuestion(modelText, modelJson, modelJson, userInput);
+    await handleCommandOrQuestion(modelText, modelJson, userInput);
   }
 }
 
