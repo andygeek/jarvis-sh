@@ -1,4 +1,4 @@
-import { ModelConfig, MultiLlama, Pipeline, PipelineNode } from 'multillama';
+import { MultiLlama, Pipeline, PipelineNode } from 'multillama';
 
 export function createOtherQuestionStep(
   pipeline: Pipeline<string>,
