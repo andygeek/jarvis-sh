@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import inquirer from 'inquirer';
-import { openEditor } from './utils.js';
+import { openEditor } from './utils/commandUtils.js';
 import {
   generateCommitMessage,
   askCommitConfirmationAndExecute,
@@ -53,10 +53,13 @@ async function interactiveSetup() {
           service === 'OpenAI'
             ? ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']
             : [
+                'claude-3-5-sonnet-20241022',
                 'claude-3-5-sonnet-20240620',
                 'claude-3-opus-20240229',
                 'claude-3-sonnet-20240229',
                 'claude-3-haiku-20240307',
+                'claude-2.1',
+                'claude-2.0',
               ],
       },
     ]);
@@ -134,9 +137,10 @@ async function initializeTool() {
       service: config.services[0],
       name: firstOllamaModel,
       response_format: 'json',
+      max_tokens: 16000,
     };
   } else {
-    const [firstKey, firstModel] = Object.entries(config.services)[0];
+    const [, firstModel] = Object.entries(config.services)[0];
     config.models[modelText] = {
       service: firstModel,
       name: configJson.model,
