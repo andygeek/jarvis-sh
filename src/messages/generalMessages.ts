@@ -9,12 +9,12 @@ export function typeQuestionMessage(userInput: string): string {
   return `
   ${userInput}
   ---
-  Classify the previous question into one of the three categories:
-  - 'command_question': if the question is about a command executed in a terminal or command-line interface.  
-  - 'creation_test_question': if the question is specifically asking for the creation of unit tests.
-  - 'creation_code_question': If the question is specifically asking for the creation of code or file, different from unit tests.
-  - 'modification_code_question': if the question is specifically asking to modify or correct an existing file or code.
-  - 'other_question': if the question does not fit into either of the above categories.  
+  Classify the previous question into one of the following categories:
+  - 'command_question': if the question is about a command executed in a terminal or command-line interface.
+  - 'creation_test_question': if the question is specifically asking for the creation of unit tests in a new file.
+  - 'creation_code_question': if the question is specifically asking for the creation of code or files, different from unit tests.
+  - 'modification_code_question': if the question is specifically asking to modify or correct an existing file or unit test, including adding missing unit tests to an existing test file.
+  - 'other_question': if the question does not fit into any of the above categories.
   Think step by step, and give me the response in JSON format: {category: 'one_of_the_categories'}.`.trim();
 }
 
