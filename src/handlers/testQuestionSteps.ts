@@ -53,7 +53,7 @@ export function createTestQuestionSteps(
       name,
       code,
     );
-    return 'Se creó el archivo con éxito';
+    return 'The file was created successfully.';
   });
 
   testQuestionStep.nextNode = testFinalStep;

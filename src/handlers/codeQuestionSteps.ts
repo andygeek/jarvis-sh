@@ -50,7 +50,7 @@ export function createCodeQuestionSteps(
       name,
       code,
     );
-    return 'Se creó el archivo con éxito';
+    return 'The file was created successfully.';
   });
 
   codeQuestionStep.nextNode = codeFinalStep;
