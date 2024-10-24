@@ -1,7 +1,8 @@
-import { spawnSync } from 'child_process';
+import { spawnSync, spawn } from 'child_process';
 import * as fs from 'fs';
 import os from 'os';
 import * as path from 'path';
+import inquirer from 'inquirer';
 
 const projectDir = path.join(os.homedir(), '.jarvissh');
 
@@ -24,8 +25,10 @@ export function openEditor() {
 
 export function loadCustomCommandsContent(): string {
   try {
-    const filePath = path.resolve(__dirname, '../../customCommands.json');
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    if (!fs.existsSync(COMMANDS_PATH)) {
+      fs.writeFileSync(COMMANDS_PATH, '');
+    }
+    const fileContent = fs.readFileSync(COMMANDS_PATH, 'utf-8');
     return fileContent;
   } catch (error) {
     console.error('Error loading custom commands content:', error);
@@ -36,13 +39,32 @@ export function loadCustomCommandsContent(): string {
 export async function showCommandOptions(
   commandsList: string[],
 ): Promise<void> {
-  if (commandsList.length === 0) {
-    console.log('No commands available');
-    return;
+  commandsList.push('None');
+  const { selectedCommand } = await inquirer.prompt<{
+    selectedCommand: string;
+  }>([
+    {
+      type: 'list',
+      name: 'selectedCommand',
+      message: 'Select the command you want to run:',
+      choices: commandsList,
+    },
+  ]);
+
+  if (selectedCommand === 'None') {
+    console.log('No command will be executed.');
+    process.exit(1);
   }
 
-  console.log('Available commands:');
-  commandsList.forEach((command, index) => {
-    console.log(`${index + 1}. ${command}`);
+  await executeCommand(selectedCommand);
+  process.exit(1);
+}
+
+export function executeCommand(command: string): Promise<void> {
+  return new Promise(() => {
+    const [cmd, ...args] = command.split(' ');
+    console.log(`Executing command: ${command}`);
+
+    spawn(cmd, args, { stdio: 'inherit' });
   });
 }

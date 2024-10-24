@@ -166,21 +166,21 @@ async function main() {
       openEditor();
     } else if (args.includes('/commit')) {
       const commitData = await generateCommitMessage(modelJson);
-  
+
       if (!commitData) {
         process.exit(1);
       }
-  
+
       const { title, description } = commitData;
       askCommitConfirmationAndExecute(title, description);
     } else {
       const userInput = args.join(' ');
-  
+
       if (!userInput) {
         console.error('Please provide a question after "jarvis"');
         process.exit(1);
       }
-  
+
       await handleCommandOrQuestion(modelText, modelJson, userInput);
     }
   }
