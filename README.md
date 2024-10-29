@@ -82,10 +82,10 @@ With Jarvis, you can use some commands like `/c` to get the list of commands or 
 
 #### 1. Command List
 
-To do this, use the `/c` command followed by a description of the command you're looking for.
+To do this, use the `/cmd` command followed by a description of the command you're looking for.
 
 ```bash
-jarvis /c to create a project with vue named AndyDevBlog
+jarvis /cmd to create a project with vue named AndyDevBlog
 ```
 
 If you want to edit the list of custom commands, use `jarvis --commands` to open the file with the custom command list where Jarvis will look for your command.
