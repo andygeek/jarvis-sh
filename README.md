@@ -76,29 +76,31 @@ Jarvis-sh will provide an answer directly in the terminal.
 
 If you want to use the `?` symbol at the end of your questions to Jarvis, you need to apply the [following configuration](doc/ZshUsers.md) in your terminal.
 
-### Execute Commands
+### Commands
 
-If your input relates to terminal commands, Jarvis-sh will suggest commands that you can execute.
+With Jarvis, you can use some commands like `/c` to get the list of commands or `/ct` to create unit tests.
 
-```bash
-jarvis show me the commands to generate an apk?
-```
+#### 1. Command List
 
-You will be presented with a list of commands to choose from. Select the desired command to execute it.
-
-### Edit Custom Commands
-
-You can add or edit custom commands that Jarvis-sh will consider when generating suggestions.
+To do this, use the `/c` command followed by a description of the command you're looking for.
 
 ```bash
-jarvis --commands
+jarvis /c to create a project with vue named AndyDevBlog
 ```
 
-This will open a text editor (default is `nano` unless specified in the `EDITOR` environment variable) where you can add your custom commands.
+If you want to edit the list of custom commands, use `jarvis --commands` to open the file with the custom command list where Jarvis will look for your command.
 
-## Tools
+#### 2. Create Unit Tests
 
-Currently, we offer a tool called `/commit`, which generates the title and description of your staged changes in your Git repository using the **Conventional Commits** format. To use it, simply run the following command:
+To do this, use the `/ct` command followed by the relative path of the file for which you want to create a unit test. You should also include the relative path of the folder where you want the unit tests to be created. You can also add the relative path of example files or general context to help Jarvis generate more accurate unit tests.
+
+```bash
+jarvis /ct for the file ./src/components/HelloWorld.vue in the folder ./tests/unit/components, using as examples the files ./src/components/Header.vue, ./src/components/HeroSection.vue
+```
+
+#### 3. Create Commit Title and Description
+
+Currently, we offer a command called `/commit`, which generates the title and description of your staged changes in your Git repository using the **Conventional Commits** format. To use it, simply run the following command:
 
 ```bash
 jarvis /commit
@@ -110,8 +112,6 @@ Title: feat: update README with new configuration options and services
 Description: Enhanced the README.md by adding new sections for AI service configuration, model configuration, and API key setup for OpenAI. Updated prerequisites to clarify the installation requirements for Node.js and Ollama. Improved descriptions for features and included instructions for service options, enhancing overall clarity and usability.
 Do you want to commit with this message? (y/n)
 ```
-
-More tools will be added soon.
 
 ## Troubleshooting
 
