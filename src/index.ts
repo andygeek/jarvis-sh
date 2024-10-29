@@ -15,6 +15,7 @@ import {
 } from 'multillama';
 import { saveConfig, showConfig, loadConfig } from './utils/configUtils.js';
 import { listOllamaModels } from './utils/ollamaUtils.js';
+import { handleCommands } from './commands/commands.js';
 
 const modelText = 'modelText';
 const modelJson = 'modelJson';
@@ -173,6 +174,14 @@ async function main() {
 
       const { title, description } = commitData;
       askCommitConfirmationAndExecute(title, description);
+    } else if (args.includes('/c') || args.includes('/commands')) {
+      const userInput = args.join(' ');
+      const match = userInput.match(/\/(c|commands)\s+(.*)/);
+
+      if (match && match[2]) {
+        const message = match[2];
+        await handleCommands(modelJson, message);
+      }
     } else {
       const userInput = args.join(' ');
 
