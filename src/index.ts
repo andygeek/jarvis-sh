@@ -16,6 +16,7 @@ import {
 import { saveConfig, showConfig, loadConfig } from './utils/configUtils.js';
 import { listOllamaModels } from './utils/ollamaUtils.js';
 import { handleCommands } from './commands/commands.js';
+import { handleCreateTest } from './commands/createTest.js';
 
 const modelText = 'modelText';
 const modelJson = 'modelJson';
@@ -181,6 +182,18 @@ async function main() {
       if (match && match[2]) {
         const message = match[2];
         await handleCommands(modelJson, message);
+      }
+    } else if (
+      args.includes('/ct') ||
+      args.includes('/ctest') ||
+      args.includes('/ctests')
+    ) {
+      const userInput = args.join(' ');
+      const match = userInput.match(/\/(ct|ctest|ctests)\s+(.*)/);
+
+      if (match && match[2]) {
+        const message = match[2];
+        await handleCreateTest(modelJson, message);
       }
     } else {
       const userInput = args.join(' ');
