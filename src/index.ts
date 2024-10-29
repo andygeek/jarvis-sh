@@ -175,9 +175,13 @@ async function main() {
 
       const { title, description } = commitData;
       askCommitConfirmationAndExecute(title, description);
-    } else if (args.includes('/c') || args.includes('/commands')) {
+    } else if (
+      args.includes('/cmd') ||
+      args.includes('/command') ||
+      args.includes('/commands')
+    ) {
       const userInput = args.join(' ');
-      const match = userInput.match(/\/(c|commands)\s+(.*)/);
+      const match = userInput.match(/\/(cmd|command|commands)\s+(.*)/);
 
       if (match && match[2]) {
         const message = match[2];
